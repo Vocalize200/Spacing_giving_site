@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>스마트 리딩 플래시 카드</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+    <!-- Font Awesome CDN (아이콘 사용) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,43 +13,55 @@
     <header class="site-header">
         <h1><i class="fas fa-brain"></i> 스마트 리딩 플래시 카드</h1>
         <button id="themeToggleButton" class="icon-button" title="테마 변경">
-            <i class="fas fa-moon"></i>
+            <i class="fas fa-moon"></i> <!-- 아이콘은 JS에서 업데이트 -->
         </button>
     </header>
 
     <main class="container">
+
+        <!-- 스마트 리딩 토글 -->
+        <div class="smart-reading-toggle">
+            <label for="smartReadingCheckbox">
+                <i class="fas fa-wand-magic-sparkles"></i> 스마트 리딩 모드
+            </label>
+            <input type="checkbox" id="smartReadingCheckbox" checked> <!-- 기본값 켜짐 -->
+        </div>
+
         <!-- 플래시 카드 영역 -->
         <div id="flashcardWrapper">
-             <!-- 스마트 리딩 토글 버튼 -->
-            <button id="smartReadingToggle" class="toggle-button" title="스마트 리딩 활성화/비활성화">
-                <i class="fas fa-wand-magic-sparkles"></i> 스마트 리딩 <span class="toggle-status">(꺼짐)</span>
-            </button>
-
-            <div id="flashcardDisplay" class="flashcard">
-                <span id="wordContent"></span>
+            <div id="flashcardDisplay" class="flashcard" title="클릭하여 재생/일시정지">
+                <span id="wordContent">텍스트를 입력하거나 파일을 여세요</span>
                 <button id="fullscreenButton" class="icon-button fullscreen-toggle-btn" title="전체 화면 보기/나가기">
                     <i class="fas fa-expand"></i>
                 </button>
+                 <!-- 재생/일시정지 상태 표시 오버레이 (전체 화면 아닐 때) -->
                  <div id="playPauseOverlay" class="play-pause-overlay">
                     <i class="fas fa-play"></i>
                  </div>
             </div>
             <div id="timeDisplay" class="time-display">
-                <span id="currentTime">00:00</span> / <span id="totalTime">00:00</span> <span class="time-estimate-label">(예상)</span>
+                <span id="currentTime">00:00</span> / <span id="totalTime">00:00</span>
             </div>
         </div>
 
-        <!-- 진행 바 -->
-        <div class="progress-controls">
+        <!-- 진행 및 네비게이션 -->
+        <div class="progress-navigation">
             <input type="range" id="wordProgressBar" min="0" max="0" value="0" title="단어 위치 이동">
-            <div class="progress-labels">
-                 <span id="currentWordIndexLabel">0</span> / <span id="totalWordCountLabel">0</span> 단어
+            <div class="word-position-controls">
+                 <div class="word-count-display">
+                    <span id="currentWordIndexLabel">0</span> / <span id="totalWordCountLabel">0</span> 단어
+                 </div>
+                 <div class="word-jump-group">
+                     <label for="wordJumpInput">이동:</label>
+                     <input type="number" id="wordJumpInput" min="1" placeholder="번호">
+                     <button id="jumpButton" class="jump-button" title="해당 단어로 이동"><i class="fas fa-arrow-right-to-bracket"></i></button>
+                 </div>
             </div>
         </div>
 
         <!-- 재생 컨트롤 -->
         <div class="playback-controls">
-            <button id="prevWordButton" class="icon-button control-button" title="이전 단어 (Shift+←)">
+            <button id="prevWordButton" class="icon-button control-button" title="이전 단어 (Shift+왼쪽 화살표)">
                 <i class="fas fa-backward-step"></i>
             </button>
             <button id="playButton" class="icon-button control-button main-control" title="재생 (Space)">
@@ -57,10 +70,10 @@
              <button id="pauseButton" class="icon-button control-button main-control" title="일시정지 (Space)" style="display: none;">
                 <i class="fas fa-pause"></i>
             </button>
-            <button id="stopButton" class="icon-button control-button" title="정지 (처음으로) (Esc)">
+            <button id="stopButton" class="icon-button control-button" title="정지 (Esc)">
                 <i class="fas fa-stop"></i>
             </button>
-            <button id="nextWordButton" class="icon-button control-button" title="다음 단어 (Shift+→)">
+            <button id="nextWordButton" class="icon-button control-button" title="다음 단어 (Shift+오른쪽 화살표)">
                 <i class="fas fa-forward-step"></i>
             </button>
         </div>
@@ -69,18 +82,18 @@
         <div class="input-settings">
             <div class="input-group">
                 <label for="sentenceInput">텍스트 입력 또는 파일 불러오기:</label>
-                <textarea id="sentenceInput" rows="4" placeholder="여기에 텍스트를 입력하거나 아래 버튼으로 파일을 불러오세요..."></textarea>
+                <textarea id="sentenceInput" rows="4" placeholder="여기에 텍스트를 입력하거나 아래 버튼으로 .txt 파일을 불러오세요..."></textarea>
                 <label for="fileInput" class="file-label button-style">
-                    <i class="fas fa-file-lines"></i> .txt 파일 열기
+                    <i class="fas fa-folder-open"></i> .txt 파일 열기
                 </label>
                 <input type="file" id="fileInput" accept=".txt" style="display: none;">
             </div>
 
             <div class="input-group wpm-group">
-                <label for="wpmInput">기본 속도 (WPM: <output id="wpmValueLabel">120</output>)</label>
+                <label for="wpmSlider">속도 (WPM: <output id="wpmValueLabel">120</output>)</label>
                 <div class="wpm-input-controls">
-                    <input type="range" id="wpmSlider" min="20" max="600" value="120" title="기본 WPM 조절 슬라이더">
-                    <input type="number" id="wpmInput" min="20" max="600" value="120" title="기본 WPM 직접 입력">
+                    <input type="range" id="wpmSlider" min="20" max="600" value="120" title="WPM 조절 슬라이더">
+                    <input type="number" id="wpmInput" value="120" placeholder="WPM 입력" title="WPM 직접 입력 (제한 없음)">
                 </div>
             </div>
         </div>
