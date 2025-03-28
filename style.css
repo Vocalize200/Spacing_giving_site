@@ -1,0 +1,244 @@
+/* --- 기본 & 테마 설정 (이전과 동일하게 사용 가능) --- */
+:root {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --container-bg: #ffffff;
+    --border-color: #d9d9d9;
+    --border-light: #e8e8e8;
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --secondary-color: #6c757d;
+    --secondary-hover: #5a6268;
+    --accent-color: #17a2b8; /* 스마트 리딩 활성 색상으로 활용 가능 */
+    --accent-hover: #117a8b;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --icon-color: #555;
+    --button-text-color: #fff;
+    --disabled-color: #a0a0a0;
+    --flashcard-bg: #fff;
+    --flashcard-text: #222;
+
+    /* 다크 모드 변수 */
+    --dark-bg-color: #1a1a1a;
+    --dark-text-color: #e0e0e0;
+    --dark-container-bg: #2c2c2c;
+    --dark-border-color: #444;
+    --dark-border-light: #383838;
+    --dark-icon-color: #bbb;
+    --dark-disabled-color: #666;
+    --dark-flashcard-bg: #222;
+    --dark-flashcard-text: #f0f0f0;
+    --dark-shadow-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode {
+    --bg-color: var(--dark-bg-color);
+    --text-color: var(--dark-text-color);
+    --container-bg: var(--dark-container-bg);
+    --border-color: var(--dark-border-color);
+    --border-light: var(--dark-border-light);
+    --icon-color: var(--dark-icon-color);
+    --disabled-color: var(--dark-disabled-color);
+    --flashcard-bg: var(--dark-flashcard-bg);
+    --flashcard-text: var(--dark-flashcard-text);
+    --shadow-color: var(--dark-shadow-color);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- 헤더 (이전과 동일) --- */
+.site-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px; background-color: var(--container-bg);
+    box-shadow: 0 1px 4px var(--shadow-color); position: sticky;
+    top: 0; z-index: 100; transition: background-color 0.3s ease;
+}
+.site-header h1 {
+    margin: 0; font-size: 1.3em; font-weight: 600; color: var(--text-color);
+    display: flex; align-items: center; gap: 8px;
+}
+.site-header h1 i { color: var(--primary-color); }
+
+/* --- 메인 컨테이너 (이전과 동일) --- */
+.container {
+    width: 90%; max-width: 700px; margin: 20px auto; padding: 20px;
+    background-color: var(--container-bg); border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow-color); display: flex;
+    flex-direction: column; gap: 25px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- 플래시 카드 영역 --- */
+#flashcardWrapper {
+    position: relative;
+    display: flex; /* 스마트 리딩 토글 배치 위해 */
+    flex-direction: column;
+    gap: 10px; /* 토글 버튼과 플래시카드 간격 */
+}
+
+/* 스마트 리딩 토글 버튼 */
+.toggle-button {
+    align-self: flex-start; /* 왼쪽 정렬 */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--secondary-color);
+    color: var(--button-text-color);
+    border: none;
+    padding: 6px 12px; /* 크기 약간 작게 */
+    border-radius: 15px; /* 둥글게 */
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s ease;
+}
+.toggle-button:hover {
+    background-color: var(--secondary-hover);
+}
+.toggle-button.active { /* 활성화 상태 */
+    background-color: var(--accent-color);
+}
+.toggle-button.active:hover {
+    background-color: var(--accent-hover);
+}
+.toggle-status {
+    font-weight: bold;
+}
+
+
+.flashcard {
+    /* 이하는 이전과 유사 */
+    background-color: var(--flashcard-bg); border: 1px solid var(--border-light);
+    min-height: 180px; width: 100%; display: flex; justify-content: center;
+    align-items: center; font-size: clamp(2em, 8vw, 3.5em); font-weight: bold;
+    color: var(--flashcard-text); padding: 30px; box-sizing: border-box;
+    border-radius: 6px; text-align: center; position: relative; overflow: hidden;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+#wordContent {
+    display: inline-block;
+    transition: transform 0.1s ease-out;
+}
+.flashcard:active #wordContent { transform: scale(1.05); }
+
+/* 전체 화면 버튼 (이전과 동일) */
+.fullscreen-toggle-btn {
+    position: absolute; top: 10px; right: 10px; z-index: 5; opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+#flashcardWrapper:hover .fullscreen-toggle-btn { opacity: 1; } /* 플래시카드 래퍼에 호버 시 보이게 수정 */
+
+/* 재생/일시정지 오버레이 (이전과 동일) */
+.play-pause-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    background-color: rgba(0, 0, 0, 0.05); font-size: 1.5em; color: var(--icon-color);
+    opacity: 0; transition: opacity 0.2s ease; pointer-events: none; z-index: 1;
+}
+.flashcard:hover .play-pause-overlay:not(.is-playing),
+.flashcard .play-pause-overlay.is-paused { opacity: 1; }
+body.dark-mode .play-pause-overlay { background-color: rgba(255, 255, 255, 0.05); }
+
+/* 시간 표시 (이전과 동일, 레이블 추가 고려) */
+.time-display {
+    text-align: center; margin-top: 5px; /* 간격 조정 */
+    font-size: 0.9em; color: var(--secondary-color);
+}
+.time-estimate-label { font-size: 0.8em; }
+body.dark-mode .time-display { color: #aaa; }
+
+/* --- 진행 바 (이전과 동일) --- */
+.progress-controls { width: 100%; display: flex; flex-direction: column; gap: 5px; }
+.progress-controls input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary-color); margin: 0; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 0.85em; color: var(--secondary-color); padding: 0 2px; }
+body.dark-mode .progress-labels { color: #aaa; }
+
+/* --- 재생 컨트롤 (이전과 동일) --- */
+.playback-controls { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
+.control-button {
+    font-size: 1.1em; padding: 10px 15px; min-width: 50px; background-color: var(--container-bg);
+    color: var(--icon-color); border: 1px solid var(--border-color);
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+.control-button:hover { background-color: var(--border-light); border-color: var(--border-color); }
+.control-button:active { transform: scale(0.95); }
+.control-button.main-control { font-size: 1.3em; padding: 12px 20px; background-color: var(--primary-color); color: var(--button-text-color); border-color: var(--primary-color); }
+.control-button.main-control:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
+#pauseButton { background-color: var(--accent-color); border-color: var(--accent-color); }
+#pauseButton:hover { background-color: var(--accent-hover); border-color: var(--accent-hover); }
+
+/* --- 입력 및 설정 (이전과 동일) --- */
+.input-settings { display: flex; flex-direction: column; gap: 20px; border-top: 1px solid var(--border-light); padding-top: 20px; }
+.input-group { display: flex; flex-direction: column; gap: 8px; }
+.input-group label { font-weight: 500; font-size: 0.95em; color: var(--text-color); }
+textarea {
+    width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; font-family: inherit; box-sizing: border-box;
+    background-color: var(--bg-color); color: var(--text-color); resize: vertical; min-height: 80px;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2); }
+.file-label { align-self: flex-start; font-size: 0.9em; }
+
+/* WPM 컨트롤 (이전과 동일) */
+.wpm-group label { display: flex; justify-content: space-between; align-items: center; }
+#wpmValueLabel { font-weight: bold; color: var(--primary-color); }
+.wpm-input-controls { display: flex; align-items: center; gap: 15px; }
+.wpm-input-controls input[type="range"] { flex-grow: 1; cursor: pointer; accent-color: var(--primary-color); }
+.wpm-input-controls input[type="number"] {
+    width: 70px; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9em; text-align: center;
+    background-color: var(--bg-color); color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.wpm-input-controls input[type="number"]:focus { outline: none; border-color: var(--primary-color); }
+
+/* --- 공통 버튼 스타일 (이전과 동일) --- */
+.button-style { display: inline-flex; align-items: center; gap: 6px; background-color: var(--secondary-color); color: var(--button-text-color); border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 1em; text-align: center; transition: background-color 0.2s ease; }
+.button-style:hover { background-color: var(--secondary-hover); }
+.icon-button { background: none; border: none; color: var(--icon-color); font-size: 1.2em; padding: 5px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: inline-flex; justify-content: center; align-items: center; transition: background-color 0.2s ease, color 0.2s ease; }
+.icon-button:hover { background-color: var(--border-light); color: var(--text-color); }
+/* 비활성화 스타일 통합 */
+.icon-button:disabled, .button-style:disabled, .control-button:disabled, .toggle-button:disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--disabled-color); color: #eee !important; /* 비활성 시 텍스트 색상 */ border-color: transparent; }
+.icon-button:disabled:hover, .button-style:disabled:hover, .control-button:disabled:hover, .toggle-button:disabled:hover { background-color: var(--disabled-color); } /* 호버 효과 제거 */
+
+
+/* --- 전체 화면 스타일 (이전과 동일) --- */
+.flashcard:-webkit-full-screen { background-color: var(--flashcard-bg); width: 100%; height: 100%; margin: 0; border-radius: 0; border: none; font-size: clamp(3em, 12vw, 8em); }
+.flashcard:-moz-full-screen { background-color: var(--flashcard-bg); width: 100%; height: 100%; margin: 0; border-radius: 0; border: none; font-size: clamp(3em, 12vw, 8em); }
+.flashcard:fullscreen { background-color: var(--flashcard-bg); width: 100%; height: 100%; margin: 0; border-radius: 0; border: none; font-size: clamp(3em, 12vw, 8em); }
+.flashcard:fullscreen .fullscreen-toggle-btn { display: none; }
+.flashcard:fullscreen .play-pause-overlay { display: none !important; }
+.flashcard:fullscreen #smartReadingToggle { display: none; } /* 전체 화면 시 스마트 리딩 토글 숨김 */
+
+
+/* --- 미디어 쿼리 (이전과 유사하게 적용) --- */
+@media (max-width: 768px) {
+    .container { width: 95%; padding: 15px; gap: 20px; }
+    .site-header h1 { font-size: 1.1em; }
+    .flashcard { min-height: 150px; }
+    .control-button { font-size: 1em; padding: 8px 12px; min-width: 40px; }
+    .control-button.main-control { font-size: 1.1em; padding: 10px 15px; }
+    .wpm-input-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+    .wpm-input-controls input[type="number"] { width: 100%; }
+    textarea { min-height: 60px; }
+    .toggle-button { font-size: 0.8em; padding: 5px 10px;}
+}
+@media (max-width: 480px) {
+    .site-header { padding: 10px 15px; }
+    .container { gap: 15px; }
+    .flashcard { min-height: 120px; }
+    .playback-controls { gap: 5px; }
+    .control-button { padding: 6px 10px; min-width: 35px; }
+    .control-button.main-control { padding: 8px 12px; }
+    .button-style { font-size: 0.9em; padding: 6px 12px;}
+    .input-settings { padding-top: 15px; }
+}
