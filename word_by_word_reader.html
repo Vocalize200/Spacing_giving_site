@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word by Word Reader</title>
+    <style>
+        :root {
+            --background-color: #f5f5f5;
+            --container-bg: white;
+            --text-color: #333;
+            --word-display-bg: #f9f9f9;
+            --button-bg: #4CAF50;
+            --button-color: white;
+            --button-hover: #45a049;
+            --button-disabled: #cccccc;
+            --progress-bg: #ddd;
+            --progress-fill: #4CAF50;
+            --shortcut-bg: #f0f8ff;
+            --shortcut-border: #4169e1;
+            --shortcut-key-bg: #e9e9e9;
+            --current-time-color: #4CAF50;
+            --total-time-color: #666;
+            --toggle-bg: #ccc;
+            --toggle-button: white;
+            --toggle-active: #4CAF50;
+            --shortcut-title: #4169e1;
+        }
+        
+        [data-theme="dark"] {
+            --background-color: #222;
+            --container-bg: #333;
+            --text-color: #eee;
+            --word-display-bg: #444;
+            --button-bg: #388E3C;
+            --button-color: #fff;
+            --button-hover: #2E7D32;
+            --button-disabled: #555;
+            --progress-bg: #555;
+            --progress-fill: #4CAF50;
+            --shortcut-bg: #2c3e50;
+            --shortcut-border: #3498db;
+            --shortcut-key-bg: #444;
+            --current-time-color: #4CAF50;
+            --total-time-color: #aaa;
+            --toggle-bg: #555;
+            --toggle-button: #ddd;
+            --toggle-active: #4CAF50;
+            --shortcut-title: #3498db;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
+        }
+        .container {
+            background-color: var(--container-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .title-section {
+            flex: 1;
+        }
+        #word-display {
+            font-size: 28px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: var(--word-display-bg);
+            border-radius: 4px;
+            text-align: center;
+            user-select: none;
+            color: var(--text-color);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: var(--button-bg);
+            color: var(--button-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: var(--button-hover);
+        }
+        button:disabled {
+            background-color: var(--button-disabled);
+            cursor: not-allowed;
+        }
+        #file-input {
+            margin-bottom: 10px;
+        }
+        .speed-control {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .speed-control > div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0 5px 0;
+            font-size: 0.9em;
+        }
+        #progress {
+            height: 15px;
+            background-color: var(--progress-bg);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        #progress-bar {
+            height: 100%;
+            background-color: var(--progress-fill);
+            width: 0%;
+            transition: width 0.2s;
+        }
+        #progress-handle {
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+            transform: translateX(-50%);
+            display: none;
+        }
+        .position-control {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        #word-position {
+            width: 70px;
+            padding: 5px;
+            text-align: center;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--progress-bg);
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .shortcut-info {
+            background-color: var(--shortcut-bg);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid var(--shortcut-border);
+        }
+        .shortcut-info h3 {
+            margin-top: 0;
+            color: var(--shortcut-title);
+        }
+        .shortcut-key {
+            background-color: var(--shortcut-key-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+            margin: 0 2px;
+        }
+        #wpm-input {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid var(--progress-bg);
+            border-radius: 4px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+        .update-info {
+            font-size: 0.8em;
+            color: var(--total-time-color);
+            text-align: right;
+            margin-top: 20px;
+        }
+        #current-time {
+            color: var(--current-time-color);
+            font-weight: bold;
+        }
+        #total-time {
+            color: var(--total-time-color);
+        }
+        
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-bg);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--toggle-button);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: var(--toggle-active);
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mode-icon {
+            font-size: 1.2em;
+        }
+        
+        /* Smart Reading Toggle */
+        .smart-reading-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            gap: 10px;
+            padding: 8px;
+            background-color: var(--word-display-bg);
+            border-radius: 4px;
+        }
+        textarea {
+            background-color: var(--word-display-bg);
+            color: var(--text-color);
+            border: 1px solid var(--progress-bg);
+        }
+        
+        /* File input styling for dark mode compatibility */
+        input[type="file"]::file-selector-button {
+            background-color: var(--button-bg);
+            color: var(--button-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: var(--button-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <div class="title-section">
+                <h1>Word by Word Reader</h1>
+            </div>
+            <div class="toggle-container">
+                <span class="mode-icon">☀️</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="mode-icon">🌙</span>
+            </div>
+        </div>
+        
+        <div class="smart-reading-toggle">
+            <span>Smart Reading:</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="smart-reading-toggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        
+        <div>
+            <label for="file-input">Upload a text file:</label>
+            <input type="file" id="file-input" accept=".txt">
+        </div>
+        
+        <div>
+            <label for="text-input">Or paste text here:</label>
+            <textarea id="text-input" rows="5" style="width: 100%;"></textarea>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn" disabled>Pause</button>
+            <button id="resume-btn" disabled>Resume</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        
+        <div class="speed-control">
+            <div>
+                <label for="speed-slider">Reading Speed:</label>
+                <input type="range" id="speed-slider" min="60" max="600" step="5" value="120">
+            </div>
+            <div>
+                <input type="number" id="wpm-input" min="60" max="1000" value="120">
+                <span>WPM</span>
+            </div>
+        </div>
+        
+        <div id="word-display">Words will appear here</div>
+        
+        <div class="time-display">
+            <span id="current-time">00:00</span>
+            <span id="total-time">/ 00:00</span>
+        </div>
+        
+        <div id="progress">
+            <div id="progress-bar"></div>
+            <div id="progress-handle"></div>
+        </div>
+        
+        <div class="stats">
+            <div id="stats-display">Words: 0 / 0</div>
+            <div class="position-control">
+                <label for="word-position">Go to word:</label>
+                <input type="number" id="word-position" min="1" value="1">
+                <button id="go-to-btn">Go</button>
+            </div>
+        </div>
+        
+        <div class="shortcut-info">
+            <h3>Keyboard Shortcuts</h3>
+            <p><span class="shortcut-key">Space</span> - Play/Pause</p>
+            <p><span class="shortcut-key">←</span> / <span class="shortcut-key">→</span> - Previous/Next word</p>
+            <p><span class="shortcut-key">Shift</span> + <span class="shortcut-key">←</span> / <span class="shortcut-key">→</span> - Jump 5 words back/forward</p>
+            <p><span class="shortcut-key">↑</span> / <span class="shortcut-key">↓</span> - Increase/Decrease speed by 5 WPM</p>
+        </div>
+        
+        <div class="update-info">
+            Last updated: 2025-03-28 06:23:32 | Created for: Vocalize200
+        </div>
+    </div>
+
+    <script>
+        // 스마트 리딩 알고리즘 클래스
+class SmartReadingManager {
+    constructor(baseWpm = 200, intensity = 100) {
+        this.baseWpm = baseWpm;
+        this.intensity = intensity;
+        this.words = [];
+        this.currentIndex = 0;
+        this.analyzedTimes = [];
+    }
+    
+    setText(text) {
+        this.words = text.trim().split(/\s+/);
+        this.currentIndex = 0;
+        
+        let isEndOfSentence = false;
+        
+        this.analyzedTimes = this.words.map((word, index) => {
+            isEndOfSentence = !!word.match(/[.!?]$/);
+            
+            const nextWord = this.words[index + 1];
+            const isNextWordNewSentence = nextWord && /^[\p{Lu}]/u.test(nextWord);
+            
+            const isLastWordInSentence = isEndOfSentence || isNextWordNewSentence;
+            
+            return this.calculateSmartReadingTime(
+                word, 
+                this.baseWpm, 
+                isLastWordInSentence
+            );
+        });
+        
+        return this;
+    }
+    
+    calculateSmartReadingTime(word, baseWpm, isLastWordInSentence = false) {
+        const baseTimeMs = (60 / baseWpm) * 1000;
+        
+        if (this.intensity <= 0) {
+            return baseTimeMs;
+        }
+        
+        const cleanWord = word.replace(/[^\p{L}\p{N}]/gu, '');
+        const wordLength = cleanWord.length;
+        
+        let speedFactor = 1.0;
+        
+        if (wordLength <= 3) {
+            speedFactor = 0.9;
+        } else if (wordLength <= 5) {
+            speedFactor = 1.0;
+        } else if (wordLength <= 8) {
+            speedFactor = 1.25;
+        } else {
+            speedFactor = 1.4;
+        }
+        
+        if (word.match(/[,.!?:;]$/)) {
+            if (word.match(/[.!?]$/)) {
+                speedFactor += 0.2;
+            } else {
+                speedFactor += 0.1;
+            }
+        }
+        
+        if (isLastWordInSentence) {
+            speedFactor += 0.15;
+        }
+        
+        const effectiveSpeedFactor = 1 + ((speedFactor - 1) * (this.intensity / 100));
+        
+        return baseTimeMs * effectiveSpeedFactor;
+    }
+    
+    updateWpm(newWpm) {
+        this.baseWpm = newWpm;
+        
+        if (this.words.length > 0) {
+            this.setText(this.words.join(' '));
+        }
+        
+        return this;
+    }
+    
+    updateIntensity(newIntensity) {
+        this.intensity = Math.max(0, Math.min(100, newIntensity));
+        
+        if (this.words.length > 0) {
+            this.setText(this.words.join(' '));
+        }
+        
+        return this;
+    }
+    
+    getCurrentWordTime() {
+        if (this.words.length === 0 || this.currentIndex >= this.words.length) {
+            return { word: '', displayTimeMs: 0, isLastWord: true };
+        }
+        
+        return {
+            word: this.words[this.currentIndex],
+            displayTimeMs: this.analyzedTimes[this.currentIndex],
+            isLastWord: this.currentIndex === this.words.length - 1
+        };
+    }
+    
+    moveToNextWord() {
+        this.currentIndex++;
+        
+        if (this.currentIndex >= this.words.length) {
+            return null;
+        }
+        
+        return this.getCurrentWordTime();
+    }
+    
+    goToWordIndex(index) {
+        if (index < 0) {
+            this.currentIndex = 0;
+        } else if (index >= this.words.length) {
+            this.currentIndex = this.words.length - 1;
+        } else {
+            this.currentIndex = index;
+        }
+        
+        return this.getCurrentWordTime();
+    }
+    
+    getTotalReadingTimeMs() {
+        if (this.analyzedTimes.length === 0) {
+            return 0;
+        }
+        
+        return this.analyzedTimes.reduce((sum, time) => sum + time, 0);
+    }
+    
+    getCurrentPositionTimeMs() {
+        if (this.analyzedTimes.length === 0 || this.currentIndex === 0) {
+            return 0;
+        }
+        
+        return this.analyzedTimes
+            .slice(0, this.currentIndex)
+            .reduce((sum, time) => sum + time, 0);
+    }
+}
+		
+		
+		document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const fileInput = document.getElementById('file-input');
+            const textInput = document.getElementById('text-input');
+            const startBtn = document.getElementById('start-btn');
+            const pauseBtn = document.getElementById('pause-btn');
+            const resumeBtn = document.getElementById('resume-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const wordDisplay = document.getElementById('word-display');
+            const speedSlider = document.getElementById('speed-slider');
+            const wpmInput = document.getElementById('wpm-input');
+            const progressContainer = document.getElementById('progress');
+            const progressBar = document.getElementById('progress-bar');
+            const progressHandle = document.getElementById('progress-handle');
+            const statsDisplay = document.getElementById('stats-display');
+            const wordPositionInput = document.getElementById('word-position');
+            const goToBtn = document.getElementById('go-to-btn');
+            const currentTime = document.getElementById('current-time');
+            const totalTime = document.getElementById('total-time');
+            const themeToggle = document.getElementById('theme-toggle');
+            const smartReadingToggle = document.getElementById('smart-reading-toggle');
+            
+            // Variables
+            let words = [];
+            let currentIndex = 0;
+            let intervalId = null;
+            let wpm = 120; // Default words per minute
+            let isPaused = false;
+            let hasText = false;
+            let isDragging = false;
+			let smartReadingManager = new SmartReadingManager(120, 100);
+            let smartReadingEnabled = false;
+            
+            // Theme toggle functionality
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+            
+            // Check for saved theme preference or prefer-color-scheme
+            const savedTheme = localStorage.getItem('theme') || 
+                               (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.checked = true;
+            }
+            
+            // Smart reading toggle functionality
+            smartReadingToggle.addEventListener('change', function() {
+    smartReadingEnabled = this.checked;
+    
+    if (smartReadingEnabled) {
+        // 스마트 리딩 활성화 시 현재 WPM으로 매니저 업데이트
+        smartReadingManager.updateWpm(wpm);
+        
+        // 텍스트가 있으면 분석 시작
+        if (textInput.value.trim()) {
+            smartReadingManager.setText(textInput.value.trim());
+            
+            // 현재 단어 위치 동기화
+            if (words.length > 0) {
+                smartReadingManager.goToWordIndex(currentIndex);
+            }
+        }
+        
+        // 재생 중이면 재시작하여 스마트 타이밍 적용
+        if (intervalId) {
+            clearInterval(intervalId);
+            const wordInfo = smartReadingManager.getCurrentWordTime();
+            intervalId = setTimeout(showNextWord, wordInfo.displayTimeMs);
+        }
+    } else {
+        // 스마트 리딩 비활성화 시 기존 간격으로 재설정
+        if (intervalId) {
+            clearInterval(intervalId);
+            const interval = getIntervalFromWPM(wpm);
+            intervalId = setInterval(showNextWord, interval);
+        }
+    }
+    
+    // 시간 표시 업데이트
+    updateTimers();
+});
+            
+            // Event listeners
+            fileInput.addEventListener('change', handleFileUpload);
+            startBtn.addEventListener('click', startReading);
+            pauseBtn.addEventListener('click', pauseReading);
+            resumeBtn.addEventListener('click', resumeReading);
+            resetBtn.addEventListener('click', resetReading);
+            speedSlider.addEventListener('input', function() {
+                wpm = parseInt(speedSlider.value);
+                wpmInput.value = wpm;
+                updateSpeed();
+            });
+            wpmInput.addEventListener('change', function() {
+                let newWpm = parseInt(wpmInput.value);
+                // Validate input
+                if (isNaN(newWpm) || newWpm < 60) newWpm = 60;
+                if (newWpm > 1000) newWpm = 1000;
+                wpm = newWpm;
+                wpmInput.value = wpm;
+                speedSlider.value = Math.min(Math.max(wpm, 60), 600); // Slider has a different range
+                updateSpeed();
+            });
+            goToBtn.addEventListener('click', goToPosition);
+            textInput.addEventListener('input', function() {
+                if (intervalId) {
+                    resetReading();
+                }
+                if (smartReadingEnabled) {
+    smartReadingManager.setText(textInput.value.trim());
+}
+				updateTimers();
+            });
+            
+            // Progress bar interaction events
+            progressContainer.addEventListener('mousedown', startDragging);
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', stopDragging);
+            progressContainer.addEventListener('click', handleProgressClick);
+            
+            // Touch events for mobile support
+            progressContainer.addEventListener('touchstart', function(e) {
+                e.preventDefault(); // Prevent scrolling
+                startDragging(e.touches[0]);
+            });
+            document.addEventListener('touchmove', function(e) {
+                if (isDragging) {
+                    e.preventDefault(); // Prevent scrolling
+                    handleDrag(e.touches[0]);
+                }
+            });
+            document.addEventListener('touchend', stopDragging);
+            
+            // Add keyboard event listener
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // Format time in MM:SS
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // Update both current and total time
+            function updateTimers() {
+    const text = textInput.value.trim();
+    if (!text) {
+        currentTime.textContent = "00:00";
+        totalTime.textContent = "/ 00:00";
+        return;
+    }
+    
+    let totalTimeInSeconds, currentTimeInSeconds;
+    
+    if (smartReadingEnabled) {
+        // 스마트 리딩 시간 계산 사용
+        totalTimeInSeconds = smartReadingManager.getTotalReadingTimeMs() / 1000;
+        currentTimeInSeconds = smartReadingManager.getCurrentPositionTimeMs() / 1000;
+    } else {
+        // 기존 균일 시간 계산 사용
+        const wordCount = text.split(/\s+/).length;
+        totalTimeInSeconds = (wordCount / wpm) * 60;
+        currentTimeInSeconds = ((currentIndex + 1) / wpm) * 60;
+    }
+    
+    currentTime.textContent = formatTime(currentTimeInSeconds);
+    totalTime.textContent = `/ ${formatTime(totalTimeInSeconds)}`;
+}
+            
+            // Progress bar interaction functions
+            function startDragging(e) {
+                if (words.length === 0) return;
+                
+                isDragging = true;
+                progressHandle.style.display = 'block';
+                handleDrag(e);
+                
+                // If we're playing, pause while dragging
+                if (intervalId) {
+                    pauseReading();
+                    isPaused = true; // We'll resume after dragging
+                }
+            }
+            
+            function handleDrag(e) {
+                if (!isDragging || words.length === 0) return;
+                
+                const rect = progressContainer.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                
+                // Constrain within bounds
+                if (x < 0) x = 0;
+                if (x > rect.width) x = rect.width;
+                
+                // Calculate percentage
+                const percentage = x / rect.width;
+                
+                // Update visual handle position
+                progressHandle.style.left = `${x}px`;
+                
+                // Update progress bar width
+                progressBar.style.width = `${percentage * 100}%`;
+                
+                // Calculate and update word index
+                const newIndex = Math.floor(percentage * (words.length - 1));
+                
+                // Update current index and UI
+                currentIndex = newIndex;
+                displayCurrentWord();
+                updateStats();
+                updateWordPositionInput();
+                updateTimers();
+            }
+            
+            function stopDragging() {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                progressHandle.style.display = 'none';
+                
+                // If we were playing and paused for dragging, resume
+                if (isPaused && !intervalId) {
+                    resumeReading();
+                }
+            }
+            
+            function handleProgressClick(e) {
+                if (words.length === 0) return;
+                
+                const rect = progressContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percentage = x / rect.width;
+                
+                // Calculate and update word index
+                const newIndex = Math.floor(percentage * (words.length - 1));
+                
+                // Update current index and UI
+                currentIndex = newIndex;
+                progressBar.style.width = `${percentage * 100}%`;
+                displayCurrentWord();
+                updateStats();
+                updateWordPositionInput();
+                updateTimers();
+            }
+            
+            // Calculate interval time from WPM
+            function getIntervalFromWPM(wpm) {
+                return (60 / wpm) * 1000; // Convert to milliseconds
+            }
+            
+            // Handle key presses
+            function handleKeyPress(event) {
+                // Only respond if textarea or other input is not focused
+                if (document.activeElement === textInput || 
+                    document.activeElement === wpmInput || 
+                    document.activeElement === wordPositionInput) {
+                    return;
+                }
+                
+                // Prevent default behavior for keys we handle
+                if (["Space", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.code)) {
+                    event.preventDefault();
+                }
+                
+                switch (event.code) {
+                    case "Space": // Play/Pause
+                        if (intervalId) {
+                            pauseReading();
+                        } else if (isPaused) {
+                            resumeReading();
+                        } else {
+                            startReading();
+                        }
+                        break;
+                    case "ArrowLeft": // Previous word
+                        navigateWords(event.shiftKey ? -5 : -1);
+                        break;
+                    case "ArrowRight": // Next word
+                        navigateWords(event.shiftKey ? 5 : 1);
+                        break;
+                    case "ArrowUp": // Increase WPM by 5
+                        adjustWPM(5);
+                        break;
+                    case "ArrowDown": // Decrease WPM by 5
+                        adjustWPM(-5);
+                        break;
+                }
+            }
+            
+            // Adjust WPM by specific amount
+            function adjustWPM(amount) {
+                let newWpm = wpm + amount;
+                
+                // Validate new WPM
+                if (newWpm < 60) newWpm = 60;
+                if (newWpm > 1000) newWpm = 1000;
+                
+                // Update WPM
+                wpm = newWpm;
+                wpmInput.value = wpm;
+                speedSlider.value = Math.min(Math.max(wpm, 60), 600); // Update slider if within range
+                
+                updateSpeed();
+            }
+            
+            // Navigate words by a specific amount
+            function navigateWords(amount) {
+                // Make sure we have words
+                if (words.length === 0) {
+                    // If we have text but haven't started reading, initialize words
+                    if (textInput.value.trim()) {
+                        words = textInput.value.trim().split(/\s+/);
+                        if (words.length === 0) return;
+                    } else {
+                        return;
+                    }
+                }
+                
+                // Calculate new position
+                let newIndex = currentIndex + amount;
+                
+                // Validate the new position
+                if (newIndex < 0) newIndex = 0;
+                if (newIndex >= words.length) newIndex = words.length - 1;
+                
+                // Update position
+                currentIndex = newIndex;
+                displayCurrentWord();
+                updateStats();
+                updateWordPositionInput();
+                updateProgressBar();
+                updateTimers();
+                
+                // If we're playing, don't interrupt the interval
+                // If we're paused, keep the paused state
+            }
+            
+            // Functions
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    textInput.value = e.target.result;
+                    if (intervalId) {
+                        resetReading();
+                    }
+                    updateTimers();
+                };
+                reader.readAsText(file);
+            }
+            
+            function startReading() {
+                if (intervalId) return;
+                
+                const text = textInput.value.trim();
+                if (!text) {
+                    wordDisplay.textContent = "Please upload a file or paste text first";
+                    return;
+                }
+                
+                words = text.split(/\s+/);
+                if (words.length === 0) return;
+                
+                // If we're starting fresh, set to first word, otherwise keep current position
+                if (currentIndex >= words.length || currentIndex === 0) {
+                    currentIndex = 0;
+                }
+                
+                displayCurrentWord();
+                
+                // Enable/disable appropriate buttons
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                resumeBtn.disabled = true;
+                
+                // Start the interval using WPM
+// 기존 코드:
+// const interval = getIntervalFromWPM(wpm);
+// intervalId = setInterval(showNextWord, interval);
+
+// 새 코드:
+if (smartReadingEnabled) {
+    // 스마트 리딩 시작
+    smartReadingManager.setText(text);
+    smartReadingManager.goToWordIndex(currentIndex);
+    const wordInfo = smartReadingManager.getCurrentWordTime();
+    intervalId = setTimeout(showNextWord, wordInfo.displayTimeMs);
+} else {
+    // 기존 방식으로 시작
+    const interval = getIntervalFromWPM(wpm);
+    intervalId = setInterval(showNextWord, interval);
+}
+                isPaused = false;
+                updateStats();
+                updateWordPositionInput();
+                updateProgressBar();
+                updateTimers();
+            }
+            
+            function pauseReading() {
+                if (!intervalId || isPaused) return;
+                
+                clearInterval(intervalId);
+                intervalId = null;
+                isPaused = true;
+                
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = false;
+            }
+            
+            function resumeReading() {
+                if (!isPaused) return;
+                
+// 기존 코드:
+// isPaused = false;
+// const interval = getIntervalFromWPM(wpm);
+// intervalId = setInterval(showNextWord, interval);
+
+// 새 코드:
+isPaused = false;
+
+if (smartReadingEnabled) {
+    // 스마트 리딩으로 재개
+    smartReadingManager.goToWordIndex(currentIndex);
+    const wordInfo = smartReadingManager.getCurrentWordTime();
+    intervalId = setTimeout(showNextWord, wordInfo.displayTimeMs);
+} else {
+    // 기존 방식으로 재개
+    const interval = getIntervalFromWPM(wpm);
+    intervalId = setInterval(showNextWord, interval);
+}
+                
+                pauseBtn.disabled = false;
+                resumeBtn.disabled = true;
+            }
+            
+            function resetReading() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+                
+                isPaused = false;
+                currentIndex = 0;
+                wordDisplay.textContent = "Words will appear here";
+                progressBar.style.width = "0%";
+                
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                
+                updateStats();
+                updateWordPositionInput();
+                updateTimers();
+            }
+            
+function showNextWord() {
+    currentIndex++;
+    
+    if (currentIndex >= words.length) {
+        clearInterval(intervalId);
+        if (intervalId) {
+            clearTimeout(intervalId);
+        }
+        intervalId = null;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        resumeBtn.disabled = true;
+        return;
+    }
+    
+    displayCurrentWord();
+    updateStats();
+    updateWordPositionInput();
+    updateProgressBar();
+    updateTimers();
+    
+    // 스마트 리딩 활성화 상태에 따라 다음 단어 표시 일정 설정
+    if (smartReadingEnabled) {
+        smartReadingManager.goToWordIndex(currentIndex);
+        const wordInfo = smartReadingManager.getCurrentWordTime();
+        intervalId = setTimeout(showNextWord, wordInfo.displayTimeMs);
+    }
+    // setInterval을 사용하는 경우에는 별도 처리 필요 없음
+}
+            
+            function displayCurrentWord() {
+                wordDisplay.textContent = words[currentIndex];
+            }
+            
+            function updateProgressBar() {
+                if (words.length <= 1) {
+                    progressBar.style.width = "0%";
+                    return;
+                }
+                
+                const percentage = (currentIndex / (words.length - 1)) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+            
+            function updateSpeed() {
+    if (intervalId && !isPaused) {
+        clearInterval(intervalId);
+        
+        if (smartReadingEnabled) {
+            // 스마트 리딩 매니저 업데이트 및 현재 단어의 표시 시간 사용
+            smartReadingManager.updateWpm(wpm);
+            const wordInfo = smartReadingManager.getCurrentWordTime();
+            intervalId = setTimeout(showNextWord, wordInfo.displayTimeMs);
+        } else {
+            // 기본 간격 사용
+            const interval = getIntervalFromWPM(wpm);
+            intervalId = setInterval(showNextWord, interval);
+        }
+    }
+    
+    updateTimers();
+}
+            
+            function updateStats() {
+                if (words.length > 0) {
+                    statsDisplay.textContent = `Words: ${currentIndex + 1} / ${words.length}`;
+                } else {
+                    statsDisplay.textContent = "Words: 0 / 0";
+                }
+            }
+            
+            function updateWordPositionInput() {
+                wordPositionInput.value = currentIndex + 1;
+                wordPositionInput.max = words.length;
+            }
+            
+            function goToPosition() {
+                // Get input value (1-based) and convert to 0-based index
+                let newIndex = parseInt(wordPositionInput.value) - 1;
+                
+                // Validate the input
+                if (isNaN(newIndex) || newIndex < 0) {
+                    newIndex = 0;
+                } else if (newIndex >= words.length) {
+                    newIndex = words.length - 1;
+                }
+                
+                // Update the current position
+                currentIndex = newIndex;
+				if (smartReadingEnabled) {
+    smartReadingManager.goToWordIndex(currentIndex);
+}
+                
+                // If reading is in progress, immediately display the new word
+                if (words.length > 0) {
+                    displayCurrentWord();
+                    updateStats();
+                    updateProgressBar();
+                    updateTimers();
+                    
+                    // If paused or not started yet, update display without starting timer
+                    if (!intervalId) {
+                        startBtn.disabled = false;
+                    }
+                }
+            }
+            
+            // Initialize
+            updateTimers();
+        });
+    </script>
+</body>
+</html>
